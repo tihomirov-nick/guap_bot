@@ -4,5 +4,5 @@ from aiogram.dispatcher import Dispatcher
 
 storage = MemoryStorage()
 
-bot = Bot(token=('6306742274:AAElH9FtIPEsJFD0DDqOyjEPU3pNpDyVHZU'))
+bot = Bot(token=('TOKEN'))
 dp = Dispatcher(bot, storage=storage)
