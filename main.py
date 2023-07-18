@@ -2,7 +2,7 @@ from aiogram import types
 from aiogram.utils import executor
 
 from create import dp
-from handlers import client
+from handlers import client, admin
 from database import database
 
 
@@ -12,12 +12,6 @@ async def on_startup(dp):
         types.BotCommand("start", "Запустить бота")])
 
 client.register_handlers_client(dp)
+admin.register_handlers_admin(dp)
 
 executor.start_polling(dp, skip_updates=True, on_startup=on_startup)
-
-
-# Функционал
-# # # - Поиск по преподам, группе, предмету, расписание
-# - Рассылка + заметки
-# - Загрузка файлов, поиск через Inline
-# - Расписание сессии, рассылка перед экзаменом
