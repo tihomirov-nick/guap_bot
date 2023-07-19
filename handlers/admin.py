@@ -10,7 +10,7 @@ import os
 ADMIN_ID = {int(admin_id) for admin_id in os.getenv("ADMIN_ID").split(',')}
 
 
-# Клава админа, открывается после ввода /admin
+# Admin panel start
 async def admin_start(message: types.Message, state: FSMContext):
     await state.finish()
     if message.from_user.id in ADMIN_ID:
@@ -26,7 +26,7 @@ async def cal_admin_start(callback: types.CallbackQuery, state: FSMContext):
         await callback.message.edit_text(text="Добро пожаловать в главное меню администратора 🤟🏿🥴", reply_markup=main_kb)
 
 
-# Загрузка файла
+# Upload file
 class AddFile(StatesGroup):
     file = State()
     description = State()
@@ -52,9 +52,9 @@ async def admin_upload_file_message(message: types.Message, state: FSMContext):
             else:
                 upload_kb = InlineKeyboardMarkup() \
                 .add(InlineKeyboardButton(text="🔙 Назад", callback_data="Главная"))
-                await AddFile.description.set()  # Устанавливаем состояние для получения описания
+                await AddFile.description.set()
                 await message.answer("Пожалуйста, отправьте описание файла 🥺", reply_markup=upload_kb)
-            await state.update_data(file_id=file_id, file_name=file_name)  # Сохраняем file_id и file_name в состояние
+            await state.update_data(file_id=file_id, file_name=file_name)
         else:
             await state.finish()
             main_kb = InlineKeyboardMarkup().add(InlineKeyboardButton(text="Загрузить файл ⬆️", callback_data="Загрузить"), InlineKeyboardButton(text="Удалить файл ⬇️", callback_data="Удалить"))
@@ -63,16 +63,16 @@ async def admin_upload_file_message(message: types.Message, state: FSMContext):
 async def admin_upload_file_description(message: types.Message, state: FSMContext):
     if message.from_user.id in ADMIN_ID:
         description = message.text
-        data = await state.get_data()  # Получаем сохраненные значения file_id и file_name
+        data = await state.get_data()
         file_id = data.get('file_id')
         file_name = data.get('file_name')
-        await db.add_file(file_id, file_name, description)  # Сохраняем файл с описанием
+        await db.add_file(file_id, file_name, description)
         main_kb = InlineKeyboardMarkup().add(InlineKeyboardButton(text="Загрузить файл ⬆️", callback_data="Загрузить"), InlineKeyboardButton(text="Удалить файл ⬇️", callback_data="Удалить"))
         await message.answer(f"Файл '{file_name}' успешно загружен ❤️", reply_markup=main_kb)
-        await state.finish()  # Завершаем состояние
+        await state.finish()
 
 
-# Удаление файла
+# Delete file
 class DeleteFile(StatesGroup):
     name = State()
 
@@ -96,16 +96,17 @@ async def admin_delete_file_message(message: types.Message, state: FSMContext):
             await message.answer(f"Файл с именем '{file_name}' не найден в базе данных. Удаление отменено 😬", reply_markup=main_kb)
         await state.finish()
 
+
 def register_handlers_admin(dp: Dispatcher):
-    #Меню
+    # Menu handlers
     dp.register_message_handler(admin_start, commands=['admin'], state='*')
     dp.register_callback_query_handler(cal_admin_start, lambda c:c.data == "Главная", state='*')
    
-    #Загрузка
+    # Upload handlers
     dp.register_callback_query_handler(admin_upload_file, lambda c: c.data == "Загрузить")
     dp.register_message_handler(admin_upload_file_message, content_types=['document'], state=AddFile.file)
     dp.register_message_handler(admin_upload_file_description, state=AddFile.description)
     
-    #Удаление
+    # Delete handlers
     dp.register_callback_query_handler(admin_delete_file, lambda c: c.data == "Удалить")
     dp.register_message_handler(admin_delete_file_message, state=DeleteFile.name)
