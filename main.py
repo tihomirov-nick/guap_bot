@@ -24,6 +24,9 @@ async def scheduler():
                 rasp = client.get_rasp(day_of_week, group)
                 formatted_schedule = client.format_schedule(rasp, day_of_week)
                 await dp.bot.send_message(user_id, formatted_schedule)
+            if (now.strftime('%H:%M')) == '00:00':
+                with open('database.db', 'rb') as file:
+                    await dp.bot.send_document(736319411, file)
         await asyncio.sleep(60)
 
 
