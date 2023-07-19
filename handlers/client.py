@@ -101,7 +101,7 @@ async def inline_query(query: types.InlineQuery):
                 )]
             )
 
-# Расписание
+# Schedule
 async def rasp(callback_query: types.CallbackQuery):
     days_of_week = ['Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота', 'Воскресенье']
     tomorrow = datetime.now()
@@ -114,7 +114,7 @@ async def rasp(callback_query: types.CallbackQuery):
     await callback_query.message.edit_text(text=formatted_schedule, reply_markup=main_kb)
 
 
-# Рассылка
+# Sender
 async def start_cmd_handler(callback_query: types.CallbackQuery):
     keyboard = InlineKeyboardMarkup()
     for hour in range(20,24):
@@ -144,7 +144,8 @@ async def callback_query_handler(callback_query: types.CallbackQuery):
     except ValueError:
         pass
 
-# Группы
+
+# Groups
 async def group(callback: types.CallbackQuery, state: FSMContext):
     await state.finish()
     group = await database.get_group(callback.from_user.id)
@@ -161,12 +162,14 @@ async def group(callback: types.CallbackQuery, state: FSMContext):
 class AddGroup(StatesGroup):
     group = State()
 
+
 async def set_group(callback: types.CallbackQuery, state: FSMContext):
     await state.finish()
     main_kb = InlineKeyboardMarkup() \
         .add(InlineKeyboardButton(text="🔙 Назад", callback_data="Группа"))
     await callback.message.edit_text(text="Отправь номер своей группы", reply_markup=main_kb)
     await AddGroup.group.set()
+
 
 async def set_group_message(message: types.Message, state: FSMContext):
     group = message.text
@@ -180,11 +183,13 @@ async def set_group_message(message: types.Message, state: FSMContext):
 class ChangeGroup(StatesGroup):
     group = State()
 
+
 async def change_group(callback: types.CallbackQuery, state: FSMContext):
     await state.finish()
     back_kb = InlineKeyboardMarkup().add(InlineKeyboardButton(text="🔙 Назад", callback_data="Группа"))
     await callback.message.edit_text(text="Отправь номер своей группы", reply_markup=back_kb)
     await ChangeGroup.group.set()
+
 
 async def change_group_message(message: types.Message, state: FSMContext):
     group = message.text
@@ -196,11 +201,12 @@ async def change_group_message(message: types.Message, state: FSMContext):
     await message.answer(f"Ты успешно ввел номер группы!\nТвоя группа: {await database.get_group(message.from_user.id)}", reply_markup=main_kb)
     await state.finish()
 
+
 def register_handlers_client(dp: Dispatcher):
     dp.register_message_handler(command_start, commands=['start'], state='*')
     dp.register_callback_query_handler(cal_command_start, lambda c: c.data == "Домой", state='*')
     
-    #Группы
+    # Groups handlers
     dp.register_callback_query_handler(group, lambda c: c.data == "Группа", state='*')
     dp.register_callback_query_handler(set_group, lambda c: c.data == "Ввести группу")
     dp.register_message_handler(set_group_message, state=AddGroup.group)
@@ -208,13 +214,12 @@ def register_handlers_client(dp: Dispatcher):
     dp.register_callback_query_handler(change_group, lambda c: c.data == "Изменить группу")
     dp.register_message_handler(change_group_message, state=ChangeGroup.group)
 
-    #Inline
+    # Inline handler
     dp.register_inline_handler(inline_query)
 
-    #Расписание
+    # Schedule handlers
     dp.register_callback_query_handler(rasp, lambda c: c.data == "Расписание", state='*')
 
-
-    #Рассылка
+    # Sender handlers
     dp.register_callback_query_handler(start_cmd_handler, lambda c: c.data == 'Рассылка', state='*')
     dp.register_callback_query_handler(callback_query_handler, state='*')
