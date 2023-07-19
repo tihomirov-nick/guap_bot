@@ -32,10 +32,9 @@ def sql_start():
     base.commit()
 
 
-
-#Рассылка
+# Sending funcs
 async def get_all_from_users():
-    return cur.execute('SELECT * FROM users')
+    return cur.execute('SELECT * FROM users').fetchall()
 
 async def get_group_by_id(user_id):
     return cur.execute('SELECT "group" FROM groups WHERE id = ?', (user_id,)).fetchone()[0]
