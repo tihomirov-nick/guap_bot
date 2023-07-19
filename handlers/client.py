@@ -129,6 +129,9 @@ async def callback_query_handler(callback_query: types.CallbackQuery):
     if callback_query.data == 'Рассылка':
         return
     try:
+        main_kb = InlineKeyboardMarkup() \
+            .add(InlineKeyboardButton(text="👥 Группа", callback_data="Группа"), InlineKeyboardButton(text="📅 Расписание", callback_data="Расписание")) \
+            .add(InlineKeyboardButton(text="✉️ Рассылка", callback_data="Рассылка"), InlineKeyboardButton(text=f"🔍 Поиск", switch_inline_query_current_chat="Афанасьева"))
         send_time = datetime.strptime(callback_query.data, '%H:%M').time()
         conn = sq.connect('data.db')
         c = conn.cursor()
@@ -137,7 +140,7 @@ async def callback_query_handler(callback_query: types.CallbackQuery):
         c.execute('INSERT OR REPLACE INTO users VALUES (?, ?)', (callback_query.from_user.id, send_time.strftime('%H:%M')))
         conn.commit()
         await bot.answer_callback_query(callback_query.id)
-        await bot.send_message(callback_query.from_user.id, f"Окей, я буду отправлять тебе сообщение каждый день в {send_time.strftime('%H:%M')}. Чтобы изменить время рассылки, нажми на кнопку 'Рассылка' еще раз.")
+        await callback_query.message.edit_text(text=f"Окей, я буду отправлять тебе сообщение каждый день в {send_time.strftime('%H:%M')}. Чтобы изменить время рассылки, нажми на кнопку 'Рассылка' еще раз.", reply_markup=main_kb)
     except ValueError:
         pass
 
@@ -188,7 +191,7 @@ async def change_group_message(message: types.Message, state: FSMContext):
     await database.change_group_in_db(message.from_user.id, group)
     main_kb = InlineKeyboardMarkup().add(
         InlineKeyboardButton(text="👥 Изменить группу", callback_data="Изменить группу"),
-        InlineKeyboardButton(text="🏡 Домой", callback_data="Домой")
+        InlineKeyboardButton(text="🔙 Назад", callback_data="Домой")
     )
     await message.answer(f"Ты успешно ввел номер группы!\nТвоя группа: {await database.get_group(message.from_user.id)}", reply_markup=main_kb)
     await state.finish()
@@ -215,4 +218,3 @@ def register_handlers_client(dp: Dispatcher):
     #Рассылка
     dp.register_callback_query_handler(start_cmd_handler, lambda c: c.data == 'Рассылка', state='*')
     dp.register_callback_query_handler(callback_query_handler, state='*')
-
