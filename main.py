@@ -25,7 +25,7 @@ async def scheduler():
                 day_of_week = days_of_week[tomorrow.weekday()]
                 group = await database.get_group_by_id(user_id)
                 rasp = client.get_rasp(day_of_week, group)
-                formatted_schedule = client.format_schedule(rasp, day_of_week)
+                formatted_schedule = client.format_schedule_future(rasp, day_of_week)
                 await dp.bot.send_message(user_id, formatted_schedule)
                 
         await asyncio.sleep(60)
