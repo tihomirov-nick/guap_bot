@@ -12,6 +12,18 @@ from bs4 import BeautifulSoup
 from database import database
 from create import bot
 
+def format_schedule_futue(text: str, day: str) -> str:
+    lines = text.split('\n')
+    formatted_text = f'Расписание на завтра:\n\n☀️ {day}\n'
+    for line in lines:
+        if 'пара' in line:
+            time = line.split(')')[0] + ')'
+            formatted_text += f'\n🕘 {time}\n'
+        else:
+            formatted_text += f'{line}\n'
+    return formatted_text
+
+
 def format_schedule(text: str, day: str) -> str:
     lines = text.split('\n')
     formatted_text = f'Расписание на сегодня:\n\n☀️ {day}\n'
